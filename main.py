@@ -4,9 +4,13 @@ from datetime import timedelta
 from pyrogram import Client, idle
 from pyrogram.errors import FloodWait
 import httpx
+from dotenv import load_dotenv
+import os
 
-api_id = # YOUR_API_ID
-api_hash = '' # YOUR_API_HASH 
+load_dotenv()
+api_id = int(os.getenv("API_ID"))
+api_hash = os.getenv("API_HASH")
+
 app = Client("my_account", api_id=api_id, api_hash=api_hash)
 
 def get_time(offset_hours):
