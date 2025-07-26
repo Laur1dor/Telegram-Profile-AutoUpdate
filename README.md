@@ -18,7 +18,7 @@
 
 **Имя:**  
 ```
-root@pyrogram:~# 15:42
+root@Pyrogram:~# 15:42
 ```
 
 **Bio:**  
@@ -50,7 +50,7 @@ cd Updated-every-minute-Telegram-Bio-and-Name
 ### 2. Виртуальное окружение и зависимости
 ```bash
 python -m venv venv
-source venv/bin/activate  # Linux / macOS
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
