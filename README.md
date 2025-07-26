@@ -18,7 +18,7 @@
 
 **Имя:**  
 ```
-YOUR_NICKNAME 15:42
+root@pyrogram:~# 15:42
 ```
 
 **Bio:**  
@@ -43,8 +43,8 @@ YOUR_NICKNAME 15:42
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/your-username/telegram-bio-updater.git
-cd telegram-bio-updater
+git clone https://github.com/Laur1dor/Updated-every-minute-Telegram-Bio-and-Name.git
+cd Updated-every-minute-Telegram-Bio-and-Name
 ```
 
 ### 2. Виртуальное окружение и зависимости
@@ -61,6 +61,7 @@ pip install -r requirements.txt
 pyrogram
 tgcrypto
 httpx
+python-dotenv
 ```
 
 ---
@@ -78,9 +79,8 @@ httpx
 Создайте файл `.env` в корне проекта:
 
 ```
-API_ID=123456
-API_HASH=your_api_hash_here
-NICKNAME=YOUR_NICKNAME
+API_ID= 123456
+API_HASH= your_api_hash_here
 ```
 
 > Скрипт автоматически подтянет значения из `.env`.
@@ -104,15 +104,6 @@ python main.py
 
 ---
 
-## ✅ TODO
-
-- [ ] Добавить больше городов  
-- [ ] Добавить курс JPY и GBP  
-- [ ] Добавить форматирование с эмодзи  
-- [ ] Сделать Docker-образ  
-
----
-
 ## 📜 Лицензия
 
 MIT License
@@ -121,4 +112,4 @@ MIT License
 
 ## ⭐ Поддержка
 
-Если проект полезен — поставьте ⭐ на GitHub!
+Если проект полезен — поставьте ⭐!
