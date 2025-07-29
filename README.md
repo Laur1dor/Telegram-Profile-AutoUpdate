@@ -43,8 +43,8 @@ root@Pyrogram:~# 15:42
 
 ### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/Laur1dor/Updated-every-minute-Telegram-Bio-and-Name.git
-cd Updated-every-minute-Telegram-Bio-and-Name
+git clone https://github.com/Laur1dor/Telegram-Profile-AutoUpdate
+cd Telegram-Profile-AutoUpdate
 ```
 
 ### 2. Виртуальное окружение и зависимости
