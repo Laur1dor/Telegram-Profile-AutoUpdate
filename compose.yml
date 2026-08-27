@@ -1,23 +1,19 @@
 services:
-  # Cloudflare WARP as a SOCKS5 proxy. Telegram's MTProto is DPI-blocked in the
-  # target region, and plain VLESS no longer gets through either (the provider
-  # substitutes the TLS certificate), so WARP carries everything by default.
-  warp:
-    image: caomingjun/warp
-    container_name: tgtime-warp
-    cap_add: [NET_ADMIN]
-    devices: ["/dev/net/tun"]
-    sysctls:
-      - net.ipv6.conf.all.disable_ipv6=0
-      - net.ipv4.conf.all.src_valid_mark=1
+  tgtime:
+    build: .
+    container_name: tgtime
+    env_file: .env
     environment:
-      WARP_SLEEP: "5"
+      # Пусто = напрямую. В сетях, где Telegram блокируется, укажите один из
+      # прокси ниже и поднимите соответствующий профиль.
+      PROXY_URL: ${PROXY_URL:-}
     volumes:
-      - warp-data:/var/lib/cloudflare-warp
+      - ./data:/app/data
     restart: unless-stopped
 
-  # Optional VLESS transport, kept for hosts where VLESS still works: start with
-  # the "vless" profile and point PROXY_URL at socks5://xray:2080 in .env.
+  # Профиль "vless": свой VLESS-узел. Конфиг собирается из подписки или из
+  # списка ссылок, подписка обновляется по расписанию, мёртвые узлы выпадают.
+  #   docker compose --profile vless up -d   +   PROXY_URL=socks5://xray:2080
   xray:
     build:
       context: .
@@ -30,20 +26,25 @@ services:
       VLESS_CONFIGS_FILE: ${VLESS_CONFIGS_FILE:-}
       VLESS_UPDATE_INTERVAL: ${VLESS_UPDATE_INTERVAL:-21600}
     volumes:
-      - ./data:/app/data:ro     # optional: data/vless.txt for VLESS_CONFIGS_FILE
+      - ./data:/app/data:ro     # необязательно: data/vless.txt для VLESS_CONFIGS_FILE
     restart: unless-stopped
 
-  tgtime:
-    build: .
-    container_name: tgtime
-    env_file: .env
+  # Профиль "warp": Cloudflare WARP как SOCKS5. Не требует своего сервера, но
+  # проходит не во всех сетях — где его фильтруют, берите профиль "vless".
+  #   docker compose --profile warp up -d    +   PROXY_URL=socks5://warp:1080
+  warp:
+    image: caomingjun/warp
+    container_name: tgtime-warp
+    profiles: ["warp"]
+    cap_add: [NET_ADMIN]
+    devices: ["/dev/net/tun"]
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
     environment:
-      # All MTProto + price-API traffic goes through this proxy.
-      PROXY_URL: ${PROXY_URL:-socks5://warp:1080}
+      WARP_SLEEP: "5"
     volumes:
-      - ./data:/app/data
-    depends_on:
-      - warp
+      - warp-data:/var/lib/cloudflare-warp
     restart: unless-stopped
 
 volumes:
