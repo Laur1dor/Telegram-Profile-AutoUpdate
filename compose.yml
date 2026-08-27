@@ -1,0 +1,50 @@
+services:
+  # Cloudflare WARP as a SOCKS5 proxy. Telegram's MTProto is DPI-blocked in the
+  # target region, and plain VLESS no longer gets through either (the provider
+  # substitutes the TLS certificate), so WARP carries everything by default.
+  warp:
+    image: caomingjun/warp
+    container_name: tgtime-warp
+    cap_add: [NET_ADMIN]
+    devices: ["/dev/net/tun"]
+    sysctls:
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv4.conf.all.src_valid_mark=1
+    environment:
+      WARP_SLEEP: "5"
+    volumes:
+      - warp-data:/var/lib/cloudflare-warp
+    restart: unless-stopped
+
+  # Optional VLESS transport, kept for hosts where VLESS still works: start with
+  # the "vless" profile and point PROXY_URL at socks5://xray:2080 in .env.
+  xray:
+    build:
+      context: .
+      dockerfile: Dockerfile.xray
+    container_name: tgtime-xray
+    profiles: ["vless"]
+    environment:
+      VLESS_SUBSCRIPTION: ${VLESS_SUBSCRIPTION:-}
+      VLESS_CONFIGS: ${VLESS_CONFIGS:-}
+      VLESS_CONFIGS_FILE: ${VLESS_CONFIGS_FILE:-}
+      VLESS_UPDATE_INTERVAL: ${VLESS_UPDATE_INTERVAL:-21600}
+    volumes:
+      - ./data:/app/data:ro     # optional: data/vless.txt for VLESS_CONFIGS_FILE
+    restart: unless-stopped
+
+  tgtime:
+    build: .
+    container_name: tgtime
+    env_file: .env
+    environment:
+      # All MTProto + price-API traffic goes through this proxy.
+      PROXY_URL: ${PROXY_URL:-socks5://warp:1080}
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - warp
+    restart: unless-stopped
+
+volumes:
+  warp-data:

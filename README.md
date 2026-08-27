@@ -1,14 +1,15 @@
 # 🕒 Telegram Auto Bio & Name Updater
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)  
-![Pyrogram](https://img.shields.io/badge/Powered%20by-Pyrogram-green.svg)  
+![Python](https://img.shields.io/badge/Python-3.11+-blue.svg)
+![Pyrogram](https://img.shields.io/badge/Powered%20by-Pyrogram-green.svg)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)
 
-Этот скрипт обновляет **имя** и **био** вашего Telegram-аккаунта **каждую минуту** с актуальной информацией:
+Скрипт обновляет **имя** и **био** вашего Telegram-аккаунта **каждую минуту**:
 
-✅ Время в разных городах (Москва, Токио, Париж)  
-✅ Курсы криптовалют (BTC, ETH, TON)  
-✅ Курсы валют (USD, EUR, CNY по данным ЦБ РФ)  
+✅ Время в разных городах (Москва, Токио, Париж)
+✅ Курсы криптовалют (BTC, ETH, TON — CoinGecko)
+✅ Курсы валют (USD, EUR, CNY — ЦБ РФ)
 
 Основан на **[Pyrogram](https://docs.pyrogram.org/)** и **httpx**.
 
@@ -16,98 +17,84 @@
 
 ## 📸 Пример
 
-**Имя:**  
+**Имя:**
 ```
 root@Pyrogram:~# 15:42
 ```
 
-**Bio:**  
+**Bio:**
 ```
-✅Updated every minute┊🇷🇺MSK 15:42┊🇯🇵TYO 21:42┊🇫🇷PAR 14:42┊🟠BTC $64000┊🟣ETH $3200┊🔷TON $6.22┊💵USD 91.32₽┊💶EUR 99.11₽┊💴CNY 12.55₽
+✅Updated every minute┊🇷🇺MSK 15:42┊🇯🇵TYO 21:42┊🇫🇷PAR 14:42┊🟠BTC $67421┊🟣ETH $3280┊🔷TON $5.14┊💵USD 92.31₽┊💶EUR 99.87₽┊💴CNY 12.64₽
 ```
 
 ---
 
-## 🔧 Функционал
+## 🚀 Запуск
 
-✔️ Обновление каждые **60 секунд**  
-✔️ Получение данных из:  
-- [CoinGecko API](https://www.coingecko.com/en/api) (BTC, ETH, TON)  
-- [ЦБ РФ API](https://www.cbr-xml-daily.ru/) (USD, EUR, CNY)  
-✔️ Автообновление имени и био через **Telegram API**  
-✔️ Обработка ошибок и FloodWait  
-
----
-
-## 🚀 Установка
-
-### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/Laur1dor/Telegram-Profile-AutoUpdate
+git clone https://github.com/Laur1dor/Telegram-Profile-AutoUpdate.git
 cd Telegram-Profile-AutoUpdate
+cp .env.example .env      # вписать API_ID и API_HASH
+docker compose up -d
 ```
 
-### 2. Виртуальное окружение и зависимости
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+`API_ID` и `API_HASH` берутся на [my.telegram.org](https://my.telegram.org).
 
-📄 **requirements.txt**:
-```
-pyrogram
-tgcrypto
-httpx
-python-dotenv
-```
-
----
-
-## 🔑 Получение API ID и API HASH
-
-1. Перейдите на [my.telegram.org](https://my.telegram.org)  
-2. Войдите в аккаунт  
-3. Создайте приложение и получите **API ID** и **API HASH**  
-
----
-
-## ⚙️ Настройка
-
-Создайте файл `.env` в корне проекта:
-
-```
-API_ID= 123456
-API_HASH= your_api_hash_here
-```
-
-> Скрипт автоматически подтянет значения из `.env`.
-
----
-
-## ▶️ Запуск
+При первом запуске Pyrogram попросит войти в аккаунт — сделайте это
+интерактивно, чтобы сохранить сессию:
 
 ```bash
-python main.py
+docker compose run --rm tgtime python -u main.py
 ```
 
-Скрипт будет работать до ручной остановки.
+Файл сессии останется в `data/` и переиспользуется дальше. Он **приватный**:
+кто им владеет, тот владеет аккаунтом. В репозиторий не попадает.
 
 ---
 
-## ❗ Важно
+## 🌐 Сеть
 
-- Telegram может временно ограничить изменения имени/био при слишком частом обновлении. Скрипт учитывает `FloodWait` и ждет нужное время.
-- Рекомендуемый интервал: **60 секунд**.
+Telegram-протокол MTProto в ряде сетей режется DPI, поэтому весь трафик —
+и MTProto, и запросы к API курсов — идёт через прокси.
+
+| Транспорт | Как включить | Когда |
+|---|---|---|
+| **Cloudflare WARP** *(по умолчанию)* | ничего не нужно | DPI его не трогает |
+| **VLESS** *(опционально)* | `docker compose --profile vless up -d` + `PROXY_URL=socks5://xray:2080` | если у вас есть рабочая нода |
+
+Контейнер `xray` собирает конфиг из подписки или из списка ссылок
+(`VLESS_SUBSCRIPTION` / `VLESS_CONFIGS` / `VLESS_CONFIGS_FILE`) и сам обновляет
+её по расписанию. Балансировка по задержке, мёртвые ноды выпадают автоматически.
+
+Прямое подключение тоже возможно — оставьте `PROXY_URL` пустым.
 
 ---
 
-## 📜 Лицензия
+## ⚙️ Настройки
 
-MIT License
+| Переменная | Назначение |
+|---|---|
+| `API_ID`, `API_HASH` | ключи приложения с my.telegram.org |
+| `PROXY_URL` | SOCKS5-прокси для всего трафика; пусто = напрямую |
+| `VLESS_SUBSCRIPTION` | ссылка на подписку для профиля `vless` |
+| `VLESS_CONFIGS` | список `vless://` через запятую |
+| `VLESS_CONFIGS_FILE` | путь к файлу со ссылками, по одной на строку |
+| `VLESS_UPDATE_INTERVAL` | период обновления подписки, секунды (по умолчанию 21600) |
+
+Города, набор валют и формат строки правятся прямо в `main.py` —
+функции `get_time`, `fetch_prices`, `fetch_cbr_rates` и `update`.
 
 ---
 
-## ⭐ Поддержка
+## 🛡 Осторожно
 
-Если проект полезен — поставьте ⭐!
+- Telegram ограничивает частоту смены профиля. Скрипт ловит `FloodWait`
+  и ждёт столько, сколько попросит сервер.
+- Аккаунт используется как обычный пользователь (не бот) — это ваша личная
+  сессия. Не публикуйте `data/` и `.env`.
+
+---
+
+## 📄 Лицензия
+
+MIT
